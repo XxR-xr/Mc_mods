@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Mods Store</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .minecraft-btn {
+            background-color: #388e3c;
+            transition: all 0.2s ease;
+        }
+        .minecraft-btn:hover {
+            background-color: #2e7d32;
+        }
+        .card {
+            background-color: #1e1e1e;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body class="p-4">
+
+    <header class="text-center my-6">
+        <h1 class="text-3xl font-extrabold text-green-500 tracking-wider">MINECRAFT MODS</h1>
+        <p class="text-gray-400 text-sm mt-1">Eng sara Java va Bedrock modlari</p>
+    </header>
+
+    <div class="mb-6 flex flex-wrap gap-2 justify-center">
+        <button onclick="filterMods('all')" class="px-4 py-2 rounded bg-gray-800 text-white font-medium active:scale-95 transition">Barchasi</button>
+        <button onclick="filterMods('java')" class="px-4 py-2 rounded bg-blue-600 text-white font-medium active:scale-95 transition">Java (PC)</button>
+        <button onclick="filterMods('bedrock')" class="px-4 py-2 rounded bg-red-600 text-white font-medium active:scale-95 transition">Bedrock (Telefon)</button>
+    </div>
+
+    <div id="mods-container" class="grid grid-cols-1 gap-4">
+        </div>
+
+    <script>
+        // Telegram WebApp obyektini faollashtiramiz
+        const tg = window.Telegram.WebApp;
+        tg.expand(); // Mini Appni to'liq ekranga ochish
+
+        // Modlar bazasi (Buni keyinchalik dinamik qilish mumkin)
+        const mods = [
+            {
+                id: "mod_lucky_block",
+                title: "Lucky Block Mod",
+                version: "1.20.1",
+                platform: "java",
+                desc: "Sariq bloklarni buzing va omadingizni sinab ko'ring!",
+                img: "https://placehold.co/400x200/388e3c/white?text=Lucky+Block"
+            },
+            {
+                id: "mod_furniture_pe",
+                title: "Decocraft Furniture",
+                version: "1.21",
+                platform: "bedrock",
+                desc: "Uyingiz uchun yuzlab yangi mebellar va dekoratsiyalar.",
+                img: "https://placehold.co/400x200/d32f2f/white?text=Furniture+PE"
+            },
+            {
+                id: "mod_physics_java",
+                title: "Realistic Physics",
+                version: "1.20.4",
+                platform: "java",
+                desc: "Bloklar va suyuqliklar uchun realistik fizika qo'shadi.",
+                img: "https://placehold.co/400x200/1976d2/white?text=Physics+Mod"
+            }
+        ];
+
+        // Modlarni ekranga chiqarish funksiyasi
+        function displayMods(modsList) {
+            const container = document.getElementById('mods-container');
+            container.innerHTML = '';
+
+            modsList.forEach(mod => {
+                const platformBadge = mod.platform === 'java' 
+                    ? '<span class="bg-blue-600 text-xs px-2 py-1 rounded text-white">Java Edition</span>'
+                    : '<span class="bg-red-600 text-xs px-2 py-1 rounded text-white">Bedrock PE</span>';
+
+                const card = `
+                    <div class="card p-4 rounded-xl shadow-lg flex flex-col justify-between">
+                        <img src="${mod.img}" class="w-full h-32 object-cover rounded-lg mb-3" alt="${mod.title}">
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <h3 class="text-lg font-bold text-white">${mod.title}</h3>
+                                ${platformBadge}
+                            </div>
+                            <p class="text-gray-400 text-xs mb-1">Versiya: ${mod.version}</p>
+                            <p class="text-gray-300 text-sm mb-4">${mod.desc}</p>
+                        </div>
+                        <button onclick="getMod('${mod.id}')" class="minecraft-btn w-full py-2.5 rounded-lg text-white font-bold active:scale-95 transition">
+                            Yuklab olish (Bot orqali)
+                        </button>
+                    </div>
+                `;
+                container.innerHTML += card;
+            });
+        }
+
+        // Filtrlash
+        function filterMods(platform) {
+            if (platform === 'all') {
+                displayMods(mods);
+            } else {
+                const filtered = mods.filter(m => m.platform === platform);
+                displayMods(filtered);
+            }
+        }
+
+        // Botga ma'lumot yuborish funksiyasi
+        function getMod(modId) {
+            // Telegram botga mod ID'sini yuboramiz va Mini Appni yopamiz
+            const data = JSON.stringify({ action: "get_mod", id: modId });
+            tg.sendData(data);
+        }
+
+        // Dastlabki yuklash
+        displayMods(mods);
+    </script>
+</body>
+</html>
+
