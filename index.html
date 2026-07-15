@@ -8,122 +8,138 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body {
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121610; /* To'q yashil/qora tus */
+            color: #e2e8f0;
+            font-family: 'Segoe UI', sans-serif;
         }
-        .minecraft-btn {
+        .mc-border {
+            border: 3px solid #4a4a4a;
+            box-shadow: inset -3px -3px 0px #1e1e1e, inset 3px 3px 0px #707070;
+        }
+        .mc-btn-green {
             background-color: #388e3c;
-            transition: all 0.2s ease;
+            border: 3px solid #2e7d32;
+            box-shadow: inset -3px -3px 0px #1b5e20, inset 3px 3px 0px #81c784;
+            text-shadow: 1px 1px 0px #1b5e20;
         }
-        .minecraft-btn:hover {
+        .mc-btn-green:active {
+            box-shadow: inset 3px 3px 0px #1b5e20;
             background-color: #2e7d32;
         }
-        .card {
-            background-color: #1e1e1e;
-            border: 1px solid #333;
+        .mc-btn-red {
+            background-color: #d32f2f;
+            border: 3px solid #c62828;
+            box-shadow: inset -3px -3px 0px #7b1fa2, inset 3px 3px 0px #ef5350;
+            text-shadow: 1px 1px 0px #5c0000;
+        }
+        .mc-btn-red:active {
+            box-shadow: inset 3px 3px 0px #5c0000;
+            background-color: #c62828;
         }
     </style>
 </head>
-<body class="p-4">
+<body class="p-4 flex flex-col min-h-screen justify-between">
 
-    <header class="text-center my-6">
-        <h1 class="text-3xl font-extrabold text-green-500 tracking-wider">MINECRAFT MODS</h1>
-        <p class="text-gray-400 text-sm mt-1">Eng sara Java va Bedrock modlari</p>
-    </header>
-
-    <div class="mb-6 flex flex-wrap gap-2 justify-center">
-        <button onclick="filterMods('all')" class="px-4 py-2 rounded bg-gray-800 text-white font-medium active:scale-95 transition">Barchasi</button>
-        <button onclick="filterMods('java')" class="px-4 py-2 rounded bg-blue-600 text-white font-medium active:scale-95 transition">Java (PC)</button>
-        <button onclick="filterMods('bedrock')" class="px-4 py-2 rounded bg-red-600 text-white font-medium active:scale-95 transition">Bedrock (Telefon)</button>
+    <div id="platform-screen" class="my-auto flex flex-col items-center justify-center text-center">
+        <div class="mb-8">
+            <span class="text-6xl">🌲</span>
+            <h1 class="text-3xl font-black text-green-500 mt-4 tracking-wider">MC MODS STORE</h1>
+            <p class="text-gray-400 text-sm">O'zingizga mos platformani tanlang</p>
+        </div>
+        
+        <div class="w-full max-w-xs space-y-4">
+            <button onclick="selectPlatform('java')" class="mc-btn-green w-full py-4 rounded text-white font-bold text-lg transition active:scale-95">
+                JAVA EDITION (PC)
+            </button>
+            <button onclick="selectPlatform('bedrock')" class="mc-btn-red w-full py-4 rounded text-white font-bold text-lg transition active:scale-95">
+                BEDROCK (PE - TELEFON)
+            </button>
+        </div>
     </div>
 
-    <div id="mods-container" class="grid grid-cols-1 gap-4">
+    <div id="mods-screen" class="hidden flex-col flex-grow">
+        <div class="flex justify-between items-center mb-6">
+            <button onclick="backToPlatform()" class="mc-border bg-gray-800 text-xs px-3 py-2 rounded text-white font-bold">
+                ⬅ ORQAGA
+            </button>
+            <h2 id="platform-title" class="text-lg font-black text-green-400 uppercase"></h2>
         </div>
 
+        <div id="mods-container" class="grid grid-cols-1 gap-4">
+            </div>
+    </div>
+
     <script>
-        // Telegram WebApp obyektini faollashtiramiz
         const tg = window.Telegram.WebApp;
-        tg.expand(); // Mini Appni to'liq ekranga ochish
+        tg.expand();
 
-        // Modlar bazasi (Buni keyinchalik dinamik qilish mumkin)
-        const mods = [
-            {
-                id: "mod_lucky_block",
-                title: "Lucky Block Mod",
-                version: "1.20.1",
-                platform: "java",
-                desc: "Sariq bloklarni buzing va omadingizni sinab ko'ring!",
-                img: "https://placehold.co/400x200/388e3c/white?text=Lucky+Block"
-            },
-            {
-                id: "mod_furniture_pe",
-                title: "Decocraft Furniture",
-                version: "1.21",
-                platform: "bedrock",
-                desc: "Uyingiz uchun yuzlab yangi mebellar va dekoratsiyalar.",
-                img: "https://placehold.co/400x200/d32f2f/white?text=Furniture+PE"
-            },
-            {
-                id: "mod_physics_java",
-                title: "Realistic Physics",
-                version: "1.20.4",
-                platform: "java",
-                desc: "Bloklar va suyuqliklar uchun realistik fizika qo'shadi.",
-                img: "https://placehold.co/400x200/1976d2/white?text=Physics+Mod"
-            }
-        ];
+        // DIQQAT: "username" degan joyga o'zingizning PythonAnywhere foydalanuvchi nomingizni yozing!
+        const API_URL = "https://username.pythonanywhere.com"; 
 
-        // Modlarni ekranga chiqarish funksiyasi
-        function displayMods(modsList) {
+        function selectPlatform(platform) {
+            document.getElementById('platform-screen').classList.add('hidden');
+            document.getElementById('mods-screen').classList.remove('hidden');
+            
+            const title = platform === 'java' ? 'Java Modlari' : 'Bedrock Modlari';
+            document.getElementById('platform-title').innerText = title;
+
+            loadMods(platform);
+        }
+
+        function backToPlatform() {
+            document.getElementById('mods-screen').classList.add('hidden');
+            document.getElementById('platform-screen').classList.remove('hidden');
+        }
+
+        async function loadMods(platform) {
             const container = document.getElementById('mods-container');
-            container.innerHTML = '';
+            container.innerHTML = '<div class="text-center text-gray-500 my-10">Modlar tekshirilmoqda...</div>';
 
-            modsList.forEach(mod => {
-                const platformBadge = mod.platform === 'java' 
-                    ? '<span class="bg-blue-600 text-xs px-2 py-1 rounded text-white">Java Edition</span>'
-                    : '<span class="bg-red-600 text-xs px-2 py-1 rounded text-white">Bedrock PE</span>';
+            try {
+                const response = await fetch(`${API_URL}/api/mods?platform=${platform}`);
+                const mods = await response.json();
 
-                const card = `
-                    <div class="card p-4 rounded-xl shadow-lg flex flex-col justify-between">
-                        <img src="${mod.img}" class="w-full h-32 object-cover rounded-lg mb-3" alt="${mod.title}">
-                        <div>
-                            <div class="flex justify-between items-center mb-2">
-                                <h3 class="text-lg font-bold text-white">${mod.title}</h3>
-                                ${platformBadge}
-                            </div>
-                            <p class="text-gray-400 text-xs mb-1">Versiya: ${mod.version}</p>
-                            <p class="text-gray-300 text-sm mb-4">${mod.desc}</p>
+                if (!mods || mods.length === 0) {
+                    container.innerHTML = `
+                        <div class="mc-border bg-[#181a15] p-8 rounded-lg text-center my-10">
+                            <span class="text-5xl">📦</span>
+                            <h3 class="text-lg font-bold text-gray-400 mt-4">Modlar hali yo'q</h3>
+                            <p class="text-gray-500 text-xs mt-1">Bu bo'limga tez orada mod yuklanadi.</p>
                         </div>
-                        <button onclick="getMod('${mod.id}')" class="minecraft-btn w-full py-2.5 rounded-lg text-white font-bold active:scale-95 transition">
-                            Yuklab olish (Bot orqali)
-                        </button>
+                    `;
+                    return;
+                }
+
+                container.innerHTML = '';
+                mods.forEach(mod => {
+                    const card = `
+                        <div class="mc-border bg-[#1b1e16] p-4 rounded-lg">
+                            <h3 class="text-lg font-bold text-green-400">${mod.title}</h3>
+                            <p class="text-gray-500 text-xs mb-1">Versiya: ${mod.version}</p>
+                            <p class="text-gray-300 text-sm mb-4">${mod.description}</p>
+                            <button onclick="getMod('${mod.file_id}')" class="mc-btn-green w-full py-2 rounded text-white text-sm font-bold active:scale-95 transition">
+                                YUKLAB OLISH
+                            </button>
+                        </div>
+                    `;
+                    container.innerHTML += card;
+                });
+
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="text-center text-red-500 my-10">
+                        Xatolik yuz berdi: Serverga ulanib bo'lmadi.
                     </div>
                 `;
-                container.innerHTML += card;
-            });
-        }
-
-        // Filtrlash
-        function filterMods(platform) {
-            if (platform === 'all') {
-                displayMods(mods);
-            } else {
-                const filtered = mods.filter(m => m.platform === platform);
-                displayMods(filtered);
             }
         }
 
-        // Botga ma'lumot yuborish funksiyasi
-        function getMod(modId) {
-            // Telegram botga mod ID'sini yuboramiz va Mini Appni yopamiz
-            const data = JSON.stringify({ action: "get_mod", id: modId });
+        function getMod(fileId) {
+            // Tanlangan modning telegram fayl ID sini botga yuboramiz
+            const data = JSON.stringify({ action: "get_mod", file_id: fileId });
             tg.sendData(data);
+            tg.close();
         }
-
-        // Dastlabki yuklash
-        displayMods(mods);
     </script>
 </body>
 </html>
-
